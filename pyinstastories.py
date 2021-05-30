@@ -81,7 +81,7 @@ def login(username="", password=""):
 				username, password,
 				settings=cached_settings)
 
-			print('[I] Using cached login cookie for "' + api.authenticated_user_name + '".')
+			print('[I] Using cached login cookie for "' + api.authenticated_user_id + '".')
 
 	except (ClientCookieExpiredError, ClientLoginRequiredError) as e:
 		print('[E] ClientCookieExpiredError/ClientLoginRequiredError: {0!s}'.format(e))
@@ -118,7 +118,7 @@ def login(username="", password=""):
 		print('-' * 70)
 		sys.exit(99)
 
-	print('[I] Login to "' + api.authenticated_user_name + '" OK!')
+	print('[I] Login to "' + api.authenticated_user_id + '" OK!')
 	cookie_expiry = api.cookie_jar.auth_expires
 	print('[I] Login cookie expiry date: {0!s}'.format(
 		datetime.datetime.fromtimestamp(cookie_expiry).strftime('%Y-%m-%d at %I:%M:%S %p')))
