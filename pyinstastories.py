@@ -8,6 +8,7 @@ import time
 import subprocess
 
 from xml.dom.minidom import parseString
+from glob import glob
 
 try:
 	import urllib.request as urllib
@@ -62,7 +63,7 @@ def onlogin_callback(api, settings_file):
 def login(username="", password=""):
 	device_id = None
 	try:
-		settings_file = "credentials.json"
+		settings_file = f"credentials_{username}.json"
 		if not os.path.isfile(settings_file):
 			# settings file does not exist
 			print('[W] Unable to find auth cookie file: {0!s} (creating a new one...)'.format(settings_file))
@@ -112,7 +113,7 @@ def login(username="", password=""):
 	except Exception as e:
 		if str(e).startswith("unsupported pickle protocol"):
 			print("[W] This cookie file is not compatible with Python {}.".format(sys.version.split(' ')[0][0]))
-			print("[W] Please delete your cookie file 'credentials.json' and try again.")
+			print(f"[W] Please delete your cookie file 'credentials_{username}.json' and try again.")
 		else:
 			print('[E] Unexpected Exception: {0!s}'.format(e))
 		print('-' * 70)
@@ -414,7 +415,7 @@ def start():
 	if args.username and args.password:
 		ig_client = login(args.username, args.password)
 	else:
-		settings_file = "credentials.json"
+		settings_file = glob('credentials_*.json')[0]
 		if not os.path.isfile(settings_file):
 			print("[E] No username/password provided, but there is no login cookie present either.")
 			print("[E] Please supply --username and --password arguments.")
