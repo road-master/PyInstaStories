@@ -63,7 +63,10 @@ def onlogin_callback(api, settings_file):
 def login(username="", password=""):
 	device_id = None
 	try:
-		settings_file = glob('credentials_*.json')[0]
+		if username == '':
+			settings_file = glob('credentials_*.json')[0]
+		else:
+			settings_file = f'credentials_{username}.json'
 		if not os.path.isfile(settings_file):
 			# settings file does not exist
 			print('[W] Unable to find auth cookie file: {0!s} (creating a new one...)'.format(settings_file))
@@ -414,6 +417,8 @@ def start():
 
 	if args.username and args.password:
 		ig_client = login(args.username, args.password)
+	elif args.username:
+		settings_file = f'credentials_{args.username}.json'
 	else:
 		settings_file = glob('credentials_*.json')[0]
 		if not os.path.isfile(settings_file):
