@@ -64,7 +64,7 @@ def login(username="", password=""):
 	device_id = None
 	try:
 		if username == '':
-			settings_file = glob('credentials_*.json')[0]
+			settings_file = glob('credentials*.json')[0]
 		else:
 			settings_file = f'credentials_{username}.json'
 		if not os.path.isfile(settings_file):
@@ -420,7 +420,7 @@ def start():
 	elif args.username:
 		settings_file = f'credentials_{args.username}.json'
 	else:
-		settings_file = glob('credentials_*.json')[0]
+		settings_file = glob('credentials*.json')[0]
 		if not os.path.isfile(settings_file):
 			print("[E] No username/password provided, but there is no login cookie present either.")
 			print("[E] Please supply --username and --password arguments.")
