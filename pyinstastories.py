@@ -66,7 +66,7 @@ def login(username="", password=""):
 		if username == '':
 			settings_file = glob('credentials*.json')[0]
 		else:
-			settings_file = f'credentials_{username}.json'
+			settings_file = 'credentials_{}.json'.format(username)
 		if not os.path.isfile(settings_file):
 			# settings file does not exist
 			print('[W] Unable to find auth cookie file: {0!s} (creating a new one...)'.format(settings_file))
@@ -116,7 +116,7 @@ def login(username="", password=""):
 	except Exception as e:
 		if str(e).startswith("unsupported pickle protocol"):
 			print("[W] This cookie file is not compatible with Python {}.".format(sys.version.split(' ')[0][0]))
-			print(f"[W] Please delete your cookie file 'credentials_{username}.json' and try again.")
+			print("[W] Please delete your cookie file 'credentials_{}.json' and try again.".format(username))
 		else:
 			print('[E] Unexpected Exception: {0!s}'.format(e))
 		print('-' * 70)
@@ -418,7 +418,7 @@ def start():
 	if args.username and args.password:
 		ig_client = login(args.username, args.password)
 	elif args.username:
-		settings_file = f'credentials_{args.username}.json'
+		settings_file = 'credentials_{}.json'.format(args.username)
 	else:
 		settings_file = glob('credentials*.json')[0]
 		if not os.path.isfile(settings_file):
