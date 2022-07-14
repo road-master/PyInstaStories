@@ -63,7 +63,7 @@ def onlogin_callback(api, settings_file):
 def login(username="", password=""):
 	device_id = None
 	try:
-		settings_file = f"credentials_{username}.json"
+		settings_file = glob('credentials_*.json')[0]
 		if not os.path.isfile(settings_file):
 			# settings file does not exist
 			print('[W] Unable to find auth cookie file: {0!s} (creating a new one...)'.format(settings_file))
