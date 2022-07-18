@@ -420,13 +420,14 @@ def start():
 	elif args.username:
 		settings_file = 'credentials_{}.json'.format(args.username)
 	else:
-		settings_file = glob('credentials*.json')[0]
-		if not os.path.isfile(settings_file):
-			print("[E] No username/password provided, but there is no login cookie present either.")
-			print("[E] Please supply --username and --password arguments.")
-			exit(1)
-		else:
-			ig_client = login()
+		settings_file = 'credentials*.json'
+	try:
+		glob(settings_file)[0]
+	except:
+		print("[E] No username/password provided, but there is no login cookie present either.")
+		print("[E] Please supply --username and --password arguments.")
+		exit(1)
+	ig_client = login()
 
 	print("-" * 70)
 	global download_dest
