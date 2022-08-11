@@ -60,7 +60,7 @@ def onlogin_callback(api, settings_file):
 		print('[I] New auth cookie file was made: {0!s}'.format(settings_file))
 
 
-def login(username="", password=""):
+def login(username="", password="", forceLogin=False):
 	device_id = None
 	try:
 		if username == '':
@@ -80,12 +80,19 @@ def login(username="", password=""):
 				cached_settings = json.load(file_data, object_hook=from_json)
 
 			device_id = cached_settings.get('device_id')
-			# reuse auth settings
-			api = Client(
-				username, password,
-				settings=cached_settings)
+			if forceLogin:
+				api = Client(
+					username, password,
+					device_id=device_id,
+					on_login=lambda x: onlogin_callback(x, settings_file))
+				print('[I] Re-login for "' + username + '".')
+			else:
+				# reuse auth settings
+				api = Client(
+					username, password,
+					settings=cached_settings)
 
-			print('[I] Using cached login cookie for "' + username + '".')
+				print('[I] Using cached login cookie for "' + username + '".')
 
 	except (ClientCookieExpiredError, ClientLoginRequiredError) as e:
 		print('[E] ClientCookieExpiredError/ClientLoginRequiredError: {0!s}'.format(e))
@@ -475,6 +482,9 @@ def start():
 			if not attempt == 3:
 				attempt += 1
 				print("[E] ({:d}) Download failed: {:s}.".format(attempt, str(e)))
+				if str(e) == 'login_required' and (args.username and args.password):
+					print("[W] Trying to re-login...")
+					ig_client = login(args.username, args.password, True)
 				print("[W] Trying again in 5 seconds.")
 				time.sleep(5)
 				print('-' * 70)
