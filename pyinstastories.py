@@ -484,7 +484,7 @@ def start():
 				print("[E] ({:d}) Download failed: {:s}.".format(attempt, str(e)))
 				if str(e) == 'login_required' and (args.username and args.password):
 					print("[W] Trying to re-login...")
-					ig_client = login(args.username, args.password, True)
+					# ig_client = login(args.username, args.password, True)
 				print("[W] Trying again in 5 seconds.")
 				time.sleep(5)
 				print('-' * 70)
