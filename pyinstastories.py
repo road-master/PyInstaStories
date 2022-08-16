@@ -33,7 +33,7 @@ except ImportError:
 from instagram_private_api import ClientError
 from instagram_private_api import Client
 
-script_version = "2.7"
+script_version = "2.8"
 python_version = sys.version.split(' ')[0]
 
 download_dest = os.getcwd()

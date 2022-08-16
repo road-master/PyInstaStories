@@ -1,5 +1,5 @@
 # PyInstaStories
-![Version 2.7](https://img.shields.io/badge/Version-2.5-orange.svg)
+![Version 2.7](https://img.shields.io/badge/Version-2.8-orange.svg)
 ![Python 2.7, 3.5](https://img.shields.io/badge/Python-2.7%2C%203.5%2B-3776ab.svg)
 
 [![Support me!](https://www.buymeacoffee.com/assets/img/custom_images/yellow_img.png)](https://www.buymeacoffee.com/dvingerh)
