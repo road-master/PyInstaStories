@@ -3,6 +3,7 @@ import codecs
 import datetime
 import json
 import os
+import re
 import sys
 import time
 import subprocess
@@ -92,6 +93,11 @@ def login(username="", password="", forceLogin=False):
 					username, password,
 					settings=cached_settings)
 
+				if username == '':
+					try:
+						username = re.search('credentials_(.+?).json', settings_file).group(1)
+					except AttributeError:
+						username = api.authenticated_user_id
 				print('[I] Using cached login cookie for "' + username + '".')
 
 	except (ClientCookieExpiredError, ClientLoginRequiredError) as e:
