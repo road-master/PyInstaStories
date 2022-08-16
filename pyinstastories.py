@@ -380,7 +380,7 @@ def start():
 	print('[I] PYINSTASTORIES (SCRIPT V{:s} - PYTHON V{:s}) - {:s}'.format(script_version, python_version,
 																		   time.strftime('%Y-%m-%d %I:%M:%S %p')))
 	printLine()
-	exit()
+
 	parser = argparse.ArgumentParser()
 	parser.add_argument('-u', '--username', dest='username', type=str, required=False,
 						help="Instagram username to login with.")
