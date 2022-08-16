@@ -450,52 +450,9 @@ def start():
 	print("[I] Files will be downloaded to {:s}".format(download_dest))
 	print("-" * 70)
 
-
-	def download_user(index, user, attempt=0):
-		try:
-			if not user.isdigit():
-				user_res = ig_client.username_info(user)
-				user_id = user_res['user']['pk']
-			else:
-				user_id = user
-				user_info = ig_client.user_info(user_id)
-				if not user_info.get("user", None):
-					raise Exception("No user is associated with the given user id.")
-				else:
-					user = user_info.get("user").get("username")
-			print("[I] Getting stories for: {:s}".format(user))
-			print('-' * 70)
-			if check_directories(user):
-				follow_res = ig_client.friendships_show(user_id)
-				if follow_res.get("is_private") and not follow_res.get("following"):
-					raise Exception("You are not following this private user.")
-				get_media_story(user, user_id, ig_client, args.takenat, args.novideothumbs, args.hqvideos)
-			else:
-				print("[E] Could not make required directories. Please create a 'stories' folder manually.")
-				exit(1)
-			if (index + 1) != len(users_to_check):
-				print('-' * 70)
-				print('[I] ({}/{}) 5 second time-out until next user...'.format((index + 1), len(users_to_check)))
-				time.sleep(5)
-			print('-' * 70)
-		except Exception as e:
-			if not attempt == 3:
-				attempt += 1
-				print("[E] ({:d}) Download failed: {:s}.".format(attempt, str(e)))
-				if str(e) == 'login_required' and (args.username and args.password):
-					print("[W] Trying to re-login...")
-					# ig_client = login(args.username, args.password, True)
-				print("[W] Trying again in 5 seconds.")
-				time.sleep(5)
-				print('-' * 70)
-				download_user(index, user, attempt)
-			else: 
-				print("[E] Retry failed three times, skipping user.")
-				print('-' * 70)
-
 	for index, user_to_check in enumerate(users_to_check):
 		try:
-			download_user(index, user_to_check)
+			download_user(ig_client, users_to_check, args, index, user_to_check)
 		except KeyboardInterrupt:
 			print('-' * 70)
 			print("[I] The operation was aborted.")
@@ -503,5 +460,46 @@ def start():
 			exit(0)
 	exit(0)
 
+def download_user(ig_client, users_to_check, args, index, user, attempt=0):
+	try:
+		if not user.isdigit():
+			user_res = ig_client.username_info(user)
+			user_id = user_res['user']['pk']
+		else:
+			user_id = user
+			user_info = ig_client.user_info(user_id)
+			if not user_info.get("user", None):
+				raise Exception("No user is associated with the given user id.")
+			else:
+				user = user_info.get("user").get("username")
+		print("[I] Getting stories for: {:s}".format(user))
+		print('-' * 70)
+		if check_directories(user):
+			follow_res = ig_client.friendships_show(user_id)
+			if follow_res.get("is_private") and not follow_res.get("following"):
+				raise Exception("You are not following this private user.")
+			get_media_story(user, user_id, ig_client, args.takenat, args.novideothumbs, args.hqvideos)
+		else:
+			print("[E] Could not make required directories. Please create a 'stories' folder manually.")
+			exit(1)
+		if (index + 1) != len(users_to_check):
+			print('-' * 70)
+			print('[I] ({}/{}) 5 second time-out until next user...'.format((index + 1), len(users_to_check)))
+			time.sleep(5)
+		print('-' * 70)
+	except Exception as e:
+		if not attempt == 3:
+			attempt += 1
+			print("[E] ({:d}) Download failed: {:s}.".format(attempt, str(e)))
+			if str(e) == 'login_required' and (args.username and args.password):
+				print("[W] Trying to re-login...")
+				ig_client = login(args.username, args.password, True)
+			print("[W] Trying again in 5 seconds.")
+			time.sleep(5)
+			print('-' * 70)
+			download_user(ig_client, users_to_check, args, index, user, attempt)
+		else: 
+			print("[E] Retry failed three times, skipping user.")
+			print('-' * 70)
 
 start()
