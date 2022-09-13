@@ -2,7 +2,9 @@ import argparse
 import codecs
 import datetime
 import json
+import logging
 import os
+import psutil
 import re
 import sys
 import time
@@ -500,6 +502,8 @@ def download_user(ig_client, users_to_check, args, index, user, attempt=0):
 			if str(e) == 'login_required' and (args.username and args.password):
 				print("[W] Trying to re-login...")
 				ig_client = login(args.username, args.password, True)
+				print("[W] Restart Script...")
+				restartScript()
 			print("[W] Trying again in 5 seconds.")
 			time.sleep(5)
 			printLine()
@@ -510,5 +514,20 @@ def download_user(ig_client, users_to_check, args, index, user, attempt=0):
 
 def printLine():
 	print('-' * 80)
+
+def restartScript():
+	"""Restarts the current program, with file objects and descriptors
+			cleanup
+	"""
+
+	try:
+			p = psutil.Process(os.getpid())
+			for handler in p.get_open_files() + p.connections():
+					os.close(handler.fd)
+	except Exception as e:
+			logging.error(e)
+
+	python = sys.executable
+	os.execl(python, python, *sys.argv)
 
 start()
