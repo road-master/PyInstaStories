@@ -399,6 +399,7 @@ def start():
 	parser.add_argument('-hqv', '--hq-videos', dest='hqvideos', action='store_true',
 						help="Get higher quality video stories. Requires Ffmpeg.")
 	parser.add_argument('-o', '--output', dest='output', type=str, required=False, help="Destination folder for downloads.")
+	parser.add_argument('-f', '--force-login', dest='forcelogin', action='store_true', help="Force login.")
 
 	# Workaround to 'disable' argument abbreviations
 	parser.add_argument('--usernamx', help=argparse.SUPPRESS, metavar='IGNORE')
@@ -430,10 +431,13 @@ def start():
 		printLine()
 		sys.exit(1)
 
+	fL = args.forcelogin or False
+	if fL:
+		print('[I] forceLogin = True')
 	if args.username and args.password:
-		ig_client = login(args.username, args.password)
+		ig_client = login(args.username, args.password, forceLogin=fL)
 	elif args.username:
-		ig_client = login(args.username)
+		ig_client = login(args.username, forceLogin=fL)
 	else:
 		try:
 			settings_file = glob('credentials*.json')[0]
