@@ -1,0 +1,7 @@
+services:
+  pyinstastories:
+    build: .
+    image: mstmelody/pyinstastories:development
+    volumes:
+      - .:/workspace:cached
+      - /workspace/.venv
