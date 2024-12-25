@@ -229,6 +229,8 @@ class ChallengeableClient:
         try:
             # Reason: self.client.user_info() returns Any, but we know it's a dict.
             return self.client.user_info(user_id)  # type: ignore[no-any-return]
+        except ClientLoginRequiredError:
+            self.login_again()
         except ClientError as e:
             response = json.loads(e.error_response)
             if "message" not in response or response["message"] != "challenge_required":
@@ -240,6 +242,8 @@ class ChallengeableClient:
         try:
             # Reason: self.client.username_info() returns Any, but we know it's a dict.
             return self.client.username_info(username)  # type: ignore[no-any-return]
+        except ClientLoginRequiredError:
+            self.login_again()
         except ClientError as e:
             response = json.loads(e.error_response)
             if "message" not in response or response["message"] != "challenge_required":
@@ -251,6 +255,8 @@ class ChallengeableClient:
         try:
             # Reason: self.client.user_story_feed() returns Any, but we know it's a dict.
             return self.client.user_story_feed(user_id)  # type: ignore[no-any-return]
+        except ClientLoginRequiredError:
+            self.login_again()
         except ClientError as e:
             response = json.loads(e.error_response)
             if "message" not in response or response["message"] != "challenge_required":
@@ -262,12 +268,21 @@ class ChallengeableClient:
         try:
             # Reason: self.client.friendships_show() returns Any, but we know it's a dict.
             return self.client.friendships_show(user_id)  # type: ignore[no-any-return]
+        except ClientLoginRequiredError:
+            self.login_again()
         except ClientError as e:
             response = json.loads(e.error_response)
             if "message" not in response or response["message"] != "challenge_required":
                 raise
             self.challenge(response)
         return self.friendships_show(user_id)
+
+    def login_again(self) -> None:
+        self.client = LoginAgainExecutor(
+            CredentialFile(self.client.username),
+            self.client.username,
+            self.client.password,
+        ).login()
 
 
 class BytesSupportingJson:
@@ -295,13 +310,13 @@ class BytesSupportingJson:
 
 
 class CredentialFile:
-    def __init__(self, username: str = "") -> None:
+    def __init__(self, username: str | None = None) -> None:
         self.path_directory = Path.cwd() / ".pyinstastories_credentials"
         if not self.path_directory.is_dir():
             self.path_directory.mkdir()
         print(f"[I] Credencial will be saved to {self.path_directory}")
         print_line()
-        self.path = self.get_settings_file(username)
+        self.path = self.get_settings_file(username if username else "")
 
     def get_settings_file(self, username: str) -> Path:
         if username == "":
@@ -382,9 +397,9 @@ class LoginByCookieExecutor(LoginExecutor):
 
 
 class LoginMethodSelector:
-    def __init__(self, username: str = "", password: str = "", *, force_login: bool = False) -> None:
-        self.username = username
-        self.password = password
+    def __init__(self, username: str | None = None, password: str | None = None, *, force_login: bool = False) -> None:
+        self.username = username if username else ""
+        self.password = password if password else ""
         self.force_login = force_login
         self.settings_file = CredentialFile(username)
 
@@ -450,25 +465,26 @@ class LoginMethodSelector:
             sys.exit(9)
 
 
-def login_instagram(commandline: Commandline) -> ChallengeableClient:
-    args = commandline.args
-
-    force_login = args.forcelogin or False
-    if force_login:
-        print("[I] forceLogin = True")
-    if args.username and args.password:
-        return LoginMethodSelector(args.username, args.password, force_login=force_login).login()
-    if args.username:
-        return LoginMethodSelector(args.username, force_login=force_login).login()
-    try:
-        if not CredentialFile().is_file():
+class InstagramLogin:
+    def __init__(self, commandline: Commandline) -> None:
+        self.args = commandline.args
+        credential_file = CredentialFile(self.args.username)
+        if not self.args.username and not credential_file.is_file():
             print("[E] No username/password provided, but there is no login cookie present either.")
             print("[E] Please supply --username and --password arguments.")
             exit(1)
-        return LoginMethodSelector().login()
-    except:
-        print("[E] Credentials file not found!")
-        exit(1)
+        self.force_login = self.args.forcelogin or False
+        if self.force_login:
+            print("[I] forceLogin = True")
+
+    def login(self) -> ChallengeableClient:
+        if self.args.username:
+            return LoginMethodSelector(self.args.username, self.args.password, force_login=self.force_login).login()
+        try:
+            return LoginMethodSelector().login()
+        except:
+            print("[E] Credentials file not found!")
+            exit(1)
 
 
 # Downloader
@@ -1101,7 +1117,7 @@ class InstagramStoriesDownloader:
         )
         print_line()
         self.commandline = Commandline()
-        self.ig_client = login_instagram(self.commandline)
+        self.ig_client = InstagramLogin(self.commandline).login()
         self.user_factory = UserFactory(self.ig_client)
         print_line()
         self.download_destination_directory = DownloadDestinationDirectory(self.commandline.args.output)
@@ -1142,7 +1158,7 @@ def try_to_run() -> None:
         InstagramStoriesDownloader().download_stories()
     # Reason: To return a non-zero exit code
     except BaseException as e:  # noqa: E722,H201,RUF100  pylint: disable=bare-except
-        print(f"[E] Unexpected Exception: {e}")
+        print(f"[E] Unexpected Exception: {type(e)} {e}")
         traceback.print_tb(e.__traceback__, file=sys.stdout)
         print_line()
         sys.exit(99)
