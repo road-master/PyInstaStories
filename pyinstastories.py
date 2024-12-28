@@ -1156,6 +1156,8 @@ class InstagramStoriesDownloader:
 def try_to_run() -> None:
     try:
         InstagramStoriesDownloader().download_stories()
+    except SystemExit:
+        raise
     # Reason: To return a non-zero exit code
     except BaseException as e:  # noqa: E722,H201,RUF100  pylint: disable=bare-except
         print(f"[E] Unexpected Exception: {type(e)} {e}")
